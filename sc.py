@@ -11,19 +11,19 @@ import sympy as sym
 K = 5
 myu = 1.25
 
-def eq_R(p):    # Функция для нахождения корней комплексного уравнения
+def eq_R(p):    # пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     x = sym.Symbol('x', real = True)
     sol = sym.solve(x**(K+1) - (p+1) * x + p, x)
     return sol
 
-def F(t, lm, a):    # Подынтегральная функция
+def F(t, lm, a):    # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     return lm**a * t**(a-1)/(math.factorial(a-1))*np.exp(-lm*t)
 
 sol = []
 R = []
-ro = np.linspace(0, 5, 20*K)  # Определение нагрузки системы
+ro = np.linspace(0, 5, 20*K)  # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-for i in range(len(ro)):   # Берем только те корни, которые по модулю меньше 1
+for i in range(len(ro)):   # пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 1
     sol = eq_R(ro[i])
     for k in range(len(sol)):
         if abs(sol[k]) < 1:
@@ -53,49 +53,56 @@ while True:
     j += 1
     Q_sum += q_j
 
-x = np.linspace(0, 5, len(ro)) # Определение Х
+x = np.linspace(0, 5, len(ro)) # пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
 lya = ro / myu
 dx = 0.001
 
-def W_function(x):  # Функция W(x)
+def W_function(x):  # пїЅпїЅпїЅпїЅпїЅпїЅпїЅ W(x)
     j = 0
     W_j = 0
     if x <= 0:
         return 0 
-    t = np.arange(0, x, dx)
+    t = np.append(np.arange(0,x,dx),x)
     bj = j // K
     aj = K * (bj + 1) - j - 1
 
-    for i in range(len(q)):
-        while aj > 0 and bj > 0 and x > 0:
+    while j <= len(q):
+        while aj > 0 and bj > 0:
             Ia = (dx/3)*(F(t[0],lya[j],aj)+2*np.sum(F(t[2:-2:2],lya[j],aj))+4*np.sum(F(t[1:-1:2],lya[j],aj))+F(t[-1], lya[j],aj))
             Ib = (dx/3)*(F(t[0],myu,bj)+2*np.sum(F(t[2:-2:2],myu,bj))+4*np.sum(F(t[1:-1:2],myu,bj))+F(t[-1],myu,bj))
             W_j += q[j]*Ia*Ib
             j += 1
-            bj = j // K
+            bj = j // K + 1
             aj = K * (bj + 1) - j - 1
-            
-        while aj == 0 and bj > 0 and x > 0:
+            if j > len(q):
+                break
+                
+        while aj == 0 and bj > 0:
             Ib = (dx/3)*(F(t[0],myu,bj)+2*np.sum(F(t[2:-2:2],myu,bj))+4*np.sum(F(t[1:-1:2],myu,bj))+F(t[-1],myu,bj))
             W_j += q[j]*Ib
             j += 1
-            bj = j // K
+            bj = j // K + 1
             aj = K * (bj + 1) - j - 1
-            
-        while aj > 0 and bj == 0 and x > 0:
+            if j > len(q):
+                break
+
+        while aj > 0 and bj == 0:
             Ia = (dx/3)*(F(t[0],lya[j],aj)+2*np.sum(F(t[2:-2:2],lya[j],aj))+4*np.sum(F(t[1:-1:2],lya[j],aj))+F(t[-1], lya[j],aj))
             W_j += q[j]*Ia
             j += 1
-            bj = j // K
+            bj = j // K + 1
             aj = K * (bj + 1) - j - 1
+            if j > len(q):
+                break
             
-        if aj == 0 and bj == 0 and x > 0:
+        if aj == bj == 0 or j > len(q):
             W_j = 1
+            break
     
     return W_j
 
-W = []
+W_j = []
 for j in range(len(x)):
     w = W_function(x[j])
-    W.append(w)
-print(W)
+    W_j.append(w)
+print(W_j)
